@@ -1,13 +1,3 @@
-/*
- * Por: Wilton Lacerda Silva
- *    Ohmímetro utilizando o ADC da BitDogLab
- *
- * 
- * Neste exemplo, utilizamos o ADC do RP2040 para medir a resistência de um resistor
- * desconhecido, utilizando um divisor de tensão com dois resistores.
- *
- */
-
  #include <stdio.h>
  #include <stdlib.h>
  #include <math.h>
