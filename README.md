@@ -72,7 +72,7 @@ O projeto é modularizado, facilitando a manutenção e a extensão futura.
 
 ## 📹 Demonstração
 
-[Vídeo de Demonstração](https://drive.google.com/file/d/1ZOoLd7DZX2JimdJ4cgZNnQiggugoMOQF/view?usp=drive_link)
+[Vídeo de Demonstração](https://drive.google.com/file/d/10dzwdQU0tOD7F-sywhAbXlK5gJWKHhZF/view?usp=sharing)
 
 ---
 
