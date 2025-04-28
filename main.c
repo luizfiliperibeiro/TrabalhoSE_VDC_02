@@ -14,8 +14,8 @@
  #define endereco 0x3C
  #define ADC_PIN 28 // GPIO para o voltímetro
  #define Botao_A 5  // GPIO para botão A
- 
- int R_conhecido = 4650;   // Resistor conhecido
+
+ int R_conhecido = 10000;    // Resistor conhecido
  float R_x = 0.0;           // Resistor desconhecido
  float ADC_VREF = 3.31;     // Tensão de referência do ADC
  int ADC_RESOLUTION = 4095; // Resolução do ADC (12 bits)

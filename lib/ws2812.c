@@ -1,44 +1,39 @@
 #include "ws2812.h"
+#include "hardware/clocks.h"
+#include "pico/stdlib.h"
 #include "hardware/pio.h"
-#include "ws2812.pio.h"
-#include <stdlib.h>
+#include "ws2812.pio.h" // inclua corretamente o header gerado!
 
-// Inicializa a fita/matriz WS2812
-void ws2812_init(ws2812_t *ws, uint pin, uint num_leds) {
+void ws2812_init(ws2812_t *ws, uint pin, uint length) {
     ws->pin = pin;
-    ws->num_leds = num_leds;
-    ws->pixels = (uint8_t *)malloc(num_leds * 3); // 3 bytes por LED (RGB)
+    ws->length = length;
+    ws->pio = pio0; // Use o PIO 0 (pode trocar para pio1 se quiser)
+    ws->sm = pio_claim_unused_sm(ws->pio, true); // Pega uma state machine livre
 
-    // Configura o PIO para controlar os LEDs WS2812
-    PIO pio = pio0;
-    int sm = 0;
-    uint offset = pio_add_program(pio, &ws2812_program);
-    ws2812_program_init(pio, sm, offset, pin, 800000);
+    // Adiciona o programa no PIO e salva o offset
+    ws->offset = pio_add_program(ws->pio, &ws2812_program);
+
+    // Agora inicializa o programa, passando todos os argumentos necessários
+    ws2812_program_init(ws->pio, ws->sm, ws->offset, pin, 800000, false);
+
+    // Inicialmente apaga os LEDs
+    ws2812_clear(ws);
 }
 
-// Define a cor de um LED específico
-void ws2812_set_pixel(ws2812_t *ws, uint index, uint8_t r, uint8_t g, uint8_t b) {
-    if (index < ws->num_leds) {
-        ws->pixels[index * 3] = g;  // WS2812 usa ordem GRB
-        ws->pixels[index * 3 + 1] = r;
-        ws->pixels[index * 3 + 2] = b;
-    }
+void ws2812_set_pixel(ws2812_t *ws, uint pixel, uint8_t r, uint8_t g, uint8_t b) {
+    if (pixel >= ws->length) return;
+
+    uint32_t color = ((uint32_t)(g) << 16) | ((uint32_t)(r) << 8) | (uint32_t)(b);
+    pio_sm_put_blocking(ws->pio, ws->sm, color << 8u); // envia cor formatada
 }
 
-// Apaga todos os LEDs
 void ws2812_clear(ws2812_t *ws) {
-    for (uint i = 0; i < ws->num_leds * 3; i++) {
-        ws->pixels[i] = 0;
+    for (uint i = 0; i < ws->length; i++) {
+        ws2812_set_pixel(ws, i, 0, 0, 0); // seta todos os LEDs para preto
     }
+    ws2812_show(ws);
 }
 
-// Atualiza os LEDs WS2812
 void ws2812_show(ws2812_t *ws) {
-    PIO pio = pio0;
-    int sm = 0;
-
-    for (uint i = 0; i < ws->num_leds; i++) {
-        uint32_t pixel = ((uint32_t)ws->pixels[i * 3] << 16) | ((uint32_t)ws->pixels[i * 3 + 1] << 8) | ws->pixels[i * 3 + 2];
-        pio_sm_put_blocking(pio, sm, pixel << 8u);
-    }
+    sleep_ms(1); // Espera os dados serem transmitidos completamente
 }

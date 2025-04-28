@@ -37,9 +37,14 @@ pico_sdk_init()
 
 add_executable(projeto_ohmimetro
     main.c
-    lib/ssd1306/ssd1306.c
-    lib/ws2812/ws2812.c
+    lib/ssd1306.c
+    lib/ws2812.c
 )
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE 
+        PICO_PRINTF_SUPPORT_FLOAT=1 
+        PICO_STDIO_ENABLE_PRINTF=1
+    )
 
 pico_set_program_name(projeto_ohmimetro "projeto_ohmimetro")
 pico_set_program_version(projeto_ohmimetro "0.1")
@@ -59,7 +64,7 @@ target_include_directories(projeto_ohmimetro PRIVATE
 )
 
 # Adiciona o .pio ao projeto
-pico_generate_pio_header(ohmimetro ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812/ws2812.pio)
+pico_generate_pio_header(projeto_ohmimetro ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812.pio)
 
 # Add any user requested libraries
 target_link_libraries(projeto_ohmimetro 

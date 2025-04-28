@@ -1,25 +1,19 @@
 #ifndef WS2812_H
 #define WS2812_H
 
-#include "pico/stdlib.h"
+#include "hardware/pio.h"
 
-// Estrutura para armazenar informações da fita LED WS2812
 typedef struct {
+    PIO pio;
+    uint sm;
+    uint offset;
     uint pin;
-    uint num_leds;
-    uint8_t *pixels;
+    uint length;
 } ws2812_t;
 
-// Inicializa a matriz WS2812
-void ws2812_init(ws2812_t *ws, uint pin, uint num_leds);
-
-// Define a cor de um LED específico (R, G, B)
-void ws2812_set_pixel(ws2812_t *ws, uint index, uint8_t r, uint8_t g, uint8_t b);
-
-// Apaga todos os LEDs
+void ws2812_init(ws2812_t *ws, uint pin, uint length);
+void ws2812_set_pixel(ws2812_t *ws, uint pixel, uint8_t r, uint8_t g, uint8_t b);
 void ws2812_clear(ws2812_t *ws);
-
-// Atualiza os LEDs para exibir as cores definidas
 void ws2812_show(ws2812_t *ws);
 
 #endif
