@@ -1,11 +1,13 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <math.h>
+ #include <string.h>
  #include "pico/stdlib.h"
  #include "hardware/adc.h"
  #include "hardware/i2c.h"
  #include "lib/ssd1306.h"
  #include "lib/font.h"
+ #include "lib/ws2812.h"
  #define I2C_PORT i2c1
  #define I2C_SDA 14
  #define I2C_SCL 15
@@ -17,6 +19,8 @@
  float R_x = 0.0;           // Resistor desconhecido
  float ADC_VREF = 3.31;     // Tensão de referência do ADC
  int ADC_RESOLUTION = 4095; // Resolução do ADC (12 bits)
+
+ ws2812_t matriz_leds;      // Estrutura para a matriz WS2812
  
  // Trecho para modo BOOTSEL com botão B
  #include "pico/bootrom.h"
@@ -99,6 +103,46 @@ void determinar_cores(float resistencia, char *cor1, char *cor2, char *cor_multi
   strcpy(cor_multiplicador, cores[expoente]);
 }
 
+// Converte nome da cor para valores RGB
+void cor_para_rgb(const char* cor, uint8_t *r, uint8_t *g, uint8_t *b) {
+  if (strcmp(cor, "Preto") == 0) { *r = 0; *g = 0; *b = 0; }
+  else if (strcmp(cor, "Marrom") == 0) { *r = 101; *g = 67; *b = 33; }
+  else if (strcmp(cor, "Vermelho") == 0) { *r = 255; *g = 0; *b = 0; }
+  else if (strcmp(cor, "Laranja") == 0) { *r = 255; *g = 165; *b = 0; }
+  else if (strcmp(cor, "Amarelo") == 0) { *r = 255; *g = 255; *b = 0; }
+  else if (strcmp(cor, "Verde") == 0) { *r = 0; *g = 255; *b = 0; }
+  else if (strcmp(cor, "Azul") == 0) { *r = 0; *g = 0; *b = 255; }
+  else if (strcmp(cor, "Violeta") == 0) { *r = 148; *g = 0; *b = 211; }
+  else if (strcmp(cor, "Cinza") == 0) { *r = 128; *g = 128; *b = 128; }
+  else if (strcmp(cor, "Branco") == 0) { *r = 255; *g = 255; *b = 255; }
+}
+
+// Atualiza a matriz com as cores do resistor
+void desenhar_resistor(ws2812_t *matriz, const char* cor1, const char* cor2, const char* cor_multiplicador) {
+    uint8_t r, g, b;
+    ws2812_clear(matriz);
+
+    // Primeira faixa (LEDs 0 a 7)
+    cor_para_rgb(cor1, &r, &g, &b);
+    for (int i = 0; i < 8; i++) {
+        ws2812_set_pixel(matriz, i, r, g, b);
+    }
+
+    // Segunda faixa (LEDs 8 a 15)
+    cor_para_rgb(cor2, &r, &g, &b);
+    for (int i = 8; i < 16; i++) {
+        ws2812_set_pixel(matriz, i, r, g, b);
+    }
+
+    // Terceira faixa (LEDs 16 a 24)
+    cor_para_rgb(cor_multiplicador, &r, &g, &b);
+    for (int i = 16; i < 25; i++) {
+        ws2812_set_pixel(matriz, i, r, g, b);
+    }
+
+    ws2812_show(matriz);
+}
+
  int main()
  {
    gpio_init(Botao_A);
@@ -123,6 +167,8 @@ void determinar_cores(float resistencia, char *cor1, char *cor2, char *cor_multi
  
    adc_init();
    adc_gpio_init(ADC_PIN); // GPIO 28 como entrada analógica
+
+   ws2812_init(&matriz_leds, 7, 25); // GPIO 7, 25 LEDs (5x5)
  
    float tensao;
    char str_x[5]; // Buffer para armazenar a string
@@ -168,6 +214,10 @@ void determinar_cores(float resistencia, char *cor1, char *cor2, char *cor_multi
      ssd1306_draw_string(&ssd, str_x, 8, 52);           // Desenha uma string
      ssd1306_draw_string(&ssd, str_y, 59, 52);          // Desenha uma string
      ssd1306_send_data(&ssd);                           // Atualiza o display
+
+     // Atualiza a matriz de LEDs
+     desenhar_resistor(&matriz_leds, cor1, cor2, cor_multiplicador);
+     
      sleep_ms(700);
    }
  }

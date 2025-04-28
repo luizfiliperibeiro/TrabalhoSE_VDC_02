@@ -36,8 +36,9 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 add_executable(projeto_ohmimetro
-    src/main.c
-    src/ssd1306.c
+    main.c
+    lib/ssd1306/ssd1306.c
+    lib/ws2812/ws2812.c
 )
 
 pico_set_program_name(projeto_ohmimetro "projeto_ohmimetro")
@@ -48,12 +49,17 @@ pico_enable_stdio_uart(projeto_ohmimetro 1)
 pico_enable_stdio_usb(projeto_ohmimetro 1)
 
 # Add the standard library to the build
-target_link_libraries(projeto_ohmimetro pico_stdlib hardware_gpio hardware_i2c hardware_adc hardware_irq)
+target_link_libraries(projeto_ohmimetro pico_stdlib hardware_gpio hardware_i2c hardware_adc hardware_irq hardware_pio)
 
 # Add the standard include files to the build
 target_include_directories(projeto_ohmimetro PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        lib/ssd1306
+        lib/ws2812
 )
+
+# Adiciona o .pio ao projeto
+pico_generate_pio_header(ohmimetro ${CMAKE_CURRENT_LIST_DIR}/lib/ws2812/ws2812.pio)
 
 # Add any user requested libraries
 target_link_libraries(projeto_ohmimetro 
